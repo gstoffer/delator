@@ -366,22 +366,24 @@ func storeKnownLogs() {
 	var collection []logSelection
 	var maxSelection = 0
 	logData := grabKnownLogs("https://www.gstatic.com/ct/log_list/log_list.json")
-	for i := range logData.Logs {
-		maxSelection = i
-		var tmp logSelection
-		log := logData.Logs[i]
-		tmp.selectionNumber = i
-		tmp.logValue = log.URL
-		tmp.status = "available"
-		size, err := grabLogSize("https://" + log.URL)
-		if err != nil {
-			tmp.status = "unavailable"
+	for _, o := range logData.Operators {
+		for i := range o.Logs {
+			maxSelection = i
+			var tmp logSelection
+			log := o.Logs[i]
+			tmp.selectionNumber = i
+			tmp.logValue = log.URL
+			tmp.status = "available"
+			size, err := grabLogSize("https://" + log.URL)
+			if err != nil {
+				tmp.status = "unavailable"
+			}
+			tmp.logSize = size
+			s := fmt.Sprintf("%d\t%d\t%s\t%s\t", tmp.selectionNumber, tmp.logSize, tmp.status, tmp.logValue)
+			fmt.Fprintln(writer, s)
+			writer.Flush()
+			collection = append(collection, tmp)
 		}
-		tmp.logSize = size
-		s := fmt.Sprintf("%d\t%d\t%s\t%s\t", tmp.selectionNumber, tmp.logSize, tmp.status, tmp.logValue)
-		fmt.Fprintln(writer, s)
-		writer.Flush()
-		collection = append(collection, tmp)
 	}
 	readSelection(collection, maxSelection)
 }
@@ -451,9 +453,11 @@ func makeRange(min, max int) []int {
 func returnKnownLogURLS() []string {
 	var logUrls []string
 	logData := grabKnownLogs("https://www.gstatic.com/ct/log_list/log_list.json")
-	for i := range logData.Logs {
-		log := logData.Logs[i]
-		logUrls = append(logUrls, log.URL)
+	for _, o := range logData.Operators {
+		for i := range o.Logs {
+			log := o.Logs[i]
+			logUrls = append(logUrls, log.URL)
+		}
 	}
 	return logUrls
 }
