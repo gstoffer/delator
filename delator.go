@@ -4,20 +4,10 @@ import (
 	"bufio"
 	"context"
 	"database/sql"
-	"encoding/json"
 	"encoding/csv"
+	"encoding/json"
 	"flag"
 	"fmt"
-	ct "github.com/google/certificate-transparency-go"
-	"github.com/google/certificate-transparency-go/client"
-	"github.com/google/certificate-transparency-go/jsonclient"
-	"github.com/google/certificate-transparency-go/loglist"
-	"github.com/google/certificate-transparency-go/scanner"
-	"github.com/google/certificate-transparency-go/x509"
-	"github.com/google/certificate-transparency-go/x509util"
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/tcnksm/go-latest"
-	"golang.org/x/net/publicsuffix"
 	"io/ioutil"
 	"net"
 	http "net/http"
@@ -30,6 +20,17 @@ import (
 	"sync"
 	"text/tabwriter"
 	"time"
+
+	ct "github.com/google/certificate-transparency-go"
+	"github.com/google/certificate-transparency-go/client"
+	"github.com/google/certificate-transparency-go/jsonclient"
+	"github.com/google/certificate-transparency-go/loglist3"
+	"github.com/google/certificate-transparency-go/scanner"
+	"github.com/google/certificate-transparency-go/x509"
+	"github.com/google/certificate-transparency-go/x509util"
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/tcnksm/go-latest"
+	"golang.org/x/net/publicsuffix"
 )
 
 var (
@@ -138,21 +139,21 @@ func fetchData(URL string) []data {
 }
 
 // reards from  a record type channel and prints to csv
-func writeToCsv(out chan record){
+func writeToCsv(out chan record) {
 	file, err := os.Create("result.csv")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer file.Close()
+	csvwriter := csv.NewWriter(file)
+	defer csvwriter.Flush()
+	for r := range out {
+		var tmp = []string{r.Subdomain, r.A}
+		err := csvwriter.Write(tmp)
 		if err != nil {
 			fmt.Println(err)
 		}
-		defer file.Close()
-		csvwriter := csv.NewWriter(file)
-		defer csvwriter.Flush()
-		for r := range out {
-			var tmp = []string{r.Subdomain, r.A}
-			err := csvwriter.Write(tmp)
-			if err != nil {
-				fmt.Println(err)
-			}
-		}
+	}
 	fmt.Printf("\r%s                    \n", "done")
 }
 
@@ -193,7 +194,7 @@ func printData(Data []data) {
 
 // helper function to return the number of characters
 // in the longest string within an array. To be used
-// to calculate the minwidth for TabWriters 
+// to calculate the minwidth for TabWriters
 func getMinWidth(target_list []string) int {
 	// We sort it by length, descending
 	sort.Sort(sortByLength(target_list))
@@ -215,7 +216,7 @@ func printResults(subdomains []string) {
 	}
 	if *outcsv == false {
 		for r := range out {
-			fmt.Fprintln(writer, r.Subdomain + "\t" + r.A + "\t")
+			fmt.Fprintln(writer, r.Subdomain+"\t"+r.A+"\t")
 			writer.Flush()
 		}
 	}
@@ -342,7 +343,7 @@ func createRegexes(regexValue string) (*regexp.Regexp, *regexp.Regexp) {
 }
 
 // fetches certificate transparency json data
-func grabKnownLogs(URL string) *loglist.LogList {
+func grabKnownLogs(URL string) *loglist3.LogList {
 	client := &http.Client{Timeout: time.Second * 10}
 
 	llData, err := x509util.ReadFileOrURL(URL, client)
@@ -350,7 +351,7 @@ func grabKnownLogs(URL string) *loglist.LogList {
 		// glog.Exitf("Failed to read log list: %v", err) // TODO
 	}
 
-	ll, err := loglist.NewFromJSON(llData)
+	ll, err := loglist3.NewFromJSON(llData)
 	if err != nil {
 		// glog.Exitf("Failed to read log list: %v", err) // TODO
 	}
@@ -539,10 +540,10 @@ func grabCTLog(inputLog string) {
 func databaseCheck() {
 	if _, err := os.Stat("data.db"); err == nil {
 		// do nothing, carry on
-	  } else if os.IsNotExist(err) {
+	} else if os.IsNotExist(err) {
 		fmt.Printf("database missing, create one\n")
 		storeKnownLogs()
-	  }
+	}
 }
 
 // reads subdomains from database
@@ -602,7 +603,7 @@ func queryDatabase(query string) []string {
 
 // converts a list of subdomains into data struct objects
 func normaliseDBData(inputData []string) (outputData []data) {
-	for i := range(inputData) {
+	for i := range inputData {
 		var tmpData data
 		tmpData.NameValue = inputData[i]
 		outputData = append(outputData, tmpData)
