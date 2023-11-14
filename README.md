@@ -1,13 +1,13 @@
-![Icon](https://github.com/netevert/delator/blob/master/docs/icon.png)
+![Icon](https://github.com/gstoffer/delator/blob/master/docs/icon.png)
 =======
 [![baby-gopher](https://raw.githubusercontent.com/drnic/babygopher-site/gh-pages/images/babygopher-logo-small.png)](http://www.babygopher.org)
-[![GitHub release](https://img.shields.io/github/release/netevert/delator.svg?style=flat-square)](https://github.com/netevert/delator/releases)
-[![license](https://img.shields.io/github/license/netevert/delator.svg?style=flat-square)](https://github.com/netevert/delator/blob/master/LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/github.com/netevert/delator?style=flat-square)](https://goreportcard.com/report/github.com/netevert/delator)
+[![GitHub release](https://img.shields.io/github/release/gstoffer/delator.svg?style=flat-square)](https://github.com/gstoffer/delator/releases)
+[![license](https://img.shields.io/github/license/gstoffer/delator.svg?style=flat-square)](https://github.com/gstoffer/delator/blob/master/LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/gstoffer/delator?style=flat-square)](https://goreportcard.com/report/github.com/gstoffer/delator)
 
 DELATOR (*lat.* **informer**) is a tool to perform subdomain enumeration and initial reconnaissance through the abusing of certificate transparency (CT) logs. It expands on the original work done by [Sheila A. Berta](https://github.com/UnaPibaGeek) with her [CTFR](https://github.com/UnaPibaGeek/ctfr) tool and leverages the speed and power of [Go](https://golang.org/).
 
-![demo](https://github.com/netevert/delator/blob/master/docs/demo.gif)
+![demo](https://github.com/gstoffer/delator/blob/master/docs/demo.gif)
 
 Using DELATOR is as simple as running:
 
@@ -31,12 +31,12 @@ Installation
 ============
 There are two ways to install DELATOR on your system:
 
-1. Downloading the pre-compiled binaries for your platform from the [latest release page](https://github.com/netevert/delator/releases) and extracting in a directory of your choosing.
+1. Downloading the pre-compiled binaries for your platform from the [latest release page](https://github.com/gstoffer/delator/releases) and extracting in a directory of your choosing.
 
 2. Downloading and compiling the source code yourself by running the following commands:
 
-    - ```go get github.com/netevert/delator```
-    - `cd /$GOPATH/src/github.com/netevert/delator`
+    - ```go get github.com/gstoffer/delator```
+    - `cd /$GOPATH/src/github.com/gstoffer/delator`
     - `go build`
 
 License

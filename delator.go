@@ -35,7 +35,7 @@ import (
 
 var (
 	githubTag = &latest.GithubTag{
-		Owner:             "netevert",
+		Owner:             "gstoffer",
 		Repository:        "delator",
 		FixVersionStrFunc: latest.DeleteFrontV()}
 	logCount        = 0
