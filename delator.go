@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	http "net/http"
@@ -60,13 +61,16 @@ var (
 )
 
 type data struct {
-	IssuerCaID        int    `json:"issuer_ca_id"`
-	IssuerName        string `json:"issuer_name"`
-	NameValue         string `json:"name_value"`
-	MinCertID         int    `json:"min_cert_id"`
-	MinEntryTimestamp string `json:"min_entry_timestamp"`
-	NotAfter          string `json:"not_after"`
-	NotBefore         string `json:"not_before"`
+	IssuerCaID     int    `json:"issuer_ca_id"`
+	IssuerName     string `json:"issuer_name"`
+	CommonName     string `json:"common_name"`
+	NameValue      string `json:"name_value"`
+	ID             int64  `json:"id"`
+	EntryTimestamp string `json:"entry_timestamp"`
+	NotBefore      string `json:"not_before"`
+	NotAfter       string `json:"not_after"`
+	SerialNumber   string `json:"serial_number"`
+	ResultCount    int    `json:"result_count"`
 }
 
 type record struct {
@@ -128,14 +132,21 @@ func fetchData(URL string) []data {
 		fmt.Printf("\r%s", "writing to csv")
 	}
 	res := grabURL(URL)
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
 	}
+	body = sanitizeJSON(body)
+	var keys []data
+	json.Unmarshal(body, &keys)
 
-	keys := make([]data, 0)
-	json.Unmarshal([]byte(body), &keys)
 	return keys
+}
+
+// sanitize JSON to be valid
+func sanitizeJSON(json []byte) []byte {
+	re := regexp.MustCompile(`<(.*\n.*)*>`)
+	return re.ReplaceAll(json, []byte(""))
 }
 
 // reards from  a record type channel and prints to csv
@@ -365,7 +376,7 @@ func storeKnownLogs() {
 	fmt.Fprintln(writer, "---------\t--------\t------\t-------\t")
 	var collection []logSelection
 	var maxSelection = 0
-	logData := grabKnownLogs("https://www.gstatic.com/ct/log_list/log_list.json")
+	logData := grabKnownLogs("https://www.gstatic.com/ct/log_list/v3/log_list.json")
 	for _, o := range logData.Operators {
 		for i := range o.Logs {
 			maxSelection = i
@@ -671,7 +682,7 @@ func main() {
 	// mine data from crt.sh
 	if *source == "crt" {
 		sanitizedDomain := sanitizedInput(*domain)
-		subdomains := fetchData(fmt.Sprintf("https://crt.sh/?q=%s&output=json", sanitizedDomain))
+		subdomains := fetchData(fmt.Sprintf("https://crt.sh/?q=%s&output=json&exclude=expired&group=none", sanitizedDomain))
 		if *resolve {
 			printResults(extractSubdomains(subdomains))
 		} else {
